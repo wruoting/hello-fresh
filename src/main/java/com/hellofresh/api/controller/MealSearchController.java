@@ -2,17 +2,18 @@ package com.hellofresh.api.controller;
 
 import com.hellofresh.api.config.RouteConfig;
 import com.hellofresh.api.config.TokenConfig;
-import com.hellofresh.api.model.response.RecipeSuggestionModel;
+import com.hellofresh.api.model.mapped.MappedRecipeItems;
+import com.hellofresh.api.model.response.RecipeDescriptionModel.RecipeDescriptionModel;
+import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeItemIterator;
+import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeSuggestionModel;
+import com.hellofresh.api.service.MealSearchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/v1/recipes")
@@ -27,45 +28,36 @@ public class MealSearchController {
   @Autowired
   private RestTemplate restTemplate;
 
-  private String QUERY_PARAM = "q";
-  private String PAGE_PARAM = "page";
-  private String TAKE_PARAM = "take";
-  private String COUNTRY_PARAM = "country";
+  @Autowired
+  private MealSearchService mealSearchService;
 
   @GetMapping
-  public ResponseEntity<RecipeSuggestionModel> getRecipe(
+  public ResponseEntity<?> getRecipe(
       @RequestParam(value = "query", required = false) String query,
       @RequestParam(value = "page", defaultValue = "1", required = false) String page,
       @RequestParam(value = "take", defaultValue = "10", required = false) String take,
       @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
-
-    String helloFreshRoute = routeConfig.getHelloFreshEndpoint();
-    ResponseEntity<RecipeSuggestionModel> response;
-    try {
-      HttpHeaders headers = new HttpHeaders();
-      headers.setContentType(MediaType.APPLICATION_JSON);
-      headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenConfig.getBearerToken());
-      HttpEntity entity = new HttpEntity<String>(null, headers);
-
-      UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(helloFreshRoute + "/api/recipes/search/suggestions")
-          .queryParam(QUERY_PARAM, query)
-          .queryParam(PAGE_PARAM, page)
-          .queryParam(TAKE_PARAM, take)
-          .queryParam(COUNTRY_PARAM, country);
-
-
-
-
-      response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET, entity,
-          new ParameterizedTypeReference<RecipeSuggestionModel>() {
-          });
-    } catch (HttpClientErrorException e) {
-      System.out.println("Unexpected Response from getRecipe: " + e);
-      throw e;
-    } catch (Exception e) {
-      System.out.println("Something went wrong with this request: " + e);
-      throw e;
+    RecipeSuggestionModel recipeSuggestionModel = mealSearchService.getRecipeService(query, page, take, country);
+    if(!recipeSuggestionModel.getItems().isEmpty()) {
+      return ResponseEntity.ok().body(MappedRecipeItems.builder()
+          .recipeItems(recipeSuggestionModel
+              .getItems()
+              .get(0)
+              .getItems())
+          .build());
+    } else {
+      List<RecipeItemIterator> listEmptyItemIterator = new ArrayList<>();
+      return ResponseEntity.ok().body(MappedRecipeItems.builder()
+        .recipeItems(listEmptyItemIterator)
+        .build());
     }
-    return response;
+  }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getRecipeDescription(
+      @PathVariable(value = "id") String id,
+      @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
+    RecipeDescriptionModel recipeSuggestionModel = mealSearchService.getRecipeDescription(id, country);
+    return ResponseEntity.ok().body(recipeSuggestionModel);
   }
 }

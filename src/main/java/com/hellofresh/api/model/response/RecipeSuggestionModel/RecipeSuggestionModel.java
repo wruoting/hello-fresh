@@ -1,5 +1,5 @@
 
-package com.hellofresh.api.model.response;
+package com.hellofresh.api.model.response.RecipeSuggestionModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,23 +13,13 @@ import lombok.Data;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "take",
-    "skip",
-    "count",
-    "total",
     "items"
 })
 public class RecipeSuggestionModel {
-    @JsonProperty("take")
-    public Integer take;
-    @JsonProperty("skip")
-    public Integer skip;
-    @JsonProperty("count")
-    public Integer count;
-    @JsonProperty("total")
-    public Object total;
+
     @JsonProperty("items")
-    public List<RecipeItem> items = null;
+    public List<RecipeItems> items = null;
+
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 }
