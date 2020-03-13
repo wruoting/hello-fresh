@@ -15,4 +15,8 @@ public class RouteConfig {
 
     private String helloFreshEndpoint;
 
+    private String helloFreshImageEndpoint;
+
+    private String helloFreshCloudfrontEndpoint;
+
 }

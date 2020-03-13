@@ -4,6 +4,7 @@ package com.hellofresh.api.model.response.RecipeDescriptionModel;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
 import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,9 +16,9 @@ import lombok.Data;
     "iconLink",
     "iconPath",
     "numberOfRecipes",
-    "numberOfRecipesByCountry"
 })
 @Data
+@Builder
 public class Tag {
 
     @JsonProperty("id")
@@ -40,8 +41,5 @@ public class Tag {
 
     @JsonProperty("numberOfRecipes")
     public Integer numberOfRecipes;
-
-    @JsonProperty("numberOfRecipesByCountry")
-    public NumberOfRecipesByCountry numberOfRecipesByCountry;
 
 }

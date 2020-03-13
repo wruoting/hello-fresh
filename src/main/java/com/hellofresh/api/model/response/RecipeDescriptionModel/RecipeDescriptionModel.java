@@ -1,25 +1,29 @@
 
 package com.hellofresh.api.model.response.RecipeDescriptionModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "country",
     "id",
     "name",
-    "seoName",
     "category",
-    "slug",
     "headline",
     "description",
     "descriptionHTML",
     "descriptionMarkdown",
-    "seoDescription",
     "comment",
     "difficulty",
     "prepTime",
@@ -59,6 +63,7 @@ import lombok.Data;
     "canonicalLink"
 })
 @Data
+@Builder(toBuilder = true)
 public class RecipeDescriptionModel {
 
     @JsonProperty("country")
@@ -70,14 +75,8 @@ public class RecipeDescriptionModel {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("seoName")
-    private String seoName;
-
     @JsonProperty("category")
     private Category category;
-
-    @JsonProperty("slug")
-    private String slug;
 
     @JsonProperty("headline")
     private String headline;
@@ -90,9 +89,6 @@ public class RecipeDescriptionModel {
 
     @JsonProperty("descriptionMarkdown")
     private String descriptionMarkdown;
-
-    @JsonProperty("seoDescription")
-    private String seoDescription;
 
     @JsonProperty("comment")
     private Object comment;
@@ -109,18 +105,13 @@ public class RecipeDescriptionModel {
     @JsonProperty("servingSize")
     private Integer servingSize;
 
-    @JsonProperty("createdAt")
-    private String createdAt;
-
-    @JsonProperty("updatedAt")
-    private String updatedAt;
-
     @JsonProperty("link")
     private String link;
 
     @JsonProperty("imageLink")
     private String imageLink;
 
+    @JsonIgnore
     @JsonProperty("imagePath")
     private String imagePath;
 
@@ -186,12 +177,6 @@ public class RecipeDescriptionModel {
 
     @JsonProperty("isDinnerToLunch")
     private Boolean isDinnerToLunch;
-
-    @JsonProperty("isExcludedFromIndex")
-    private Boolean isExcludedFromIndex;
-
-    @JsonProperty("isPremium")
-    private Boolean isPremium;
 
     @JsonProperty("websiteUrl")
     private String websiteUrl;

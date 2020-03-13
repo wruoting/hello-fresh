@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.Builder;
 import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,6 +26,7 @@ import lombok.Data;
     "family"
 })
 @Data
+@Builder
 public class Ingredient {
 
     @JsonProperty("country")
@@ -38,9 +40,6 @@ public class Ingredient {
 
     @JsonProperty("name")
     public String name;
-
-    @JsonProperty("slug")
-    public String slug;
 
     @JsonProperty("description")
     public Object description;
@@ -56,12 +55,6 @@ public class Ingredient {
 
     @JsonProperty("imagePath")
     public String imagePath;
-
-    @JsonProperty("usage")
-    public Integer usage;
-
-    @JsonProperty("hasDuplicatedName")
-    public Object hasDuplicatedName;
 
     @JsonProperty("allergens")
     public List<String> allergens = null;
