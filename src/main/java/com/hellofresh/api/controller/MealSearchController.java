@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,7 @@ public class MealSearchController {
   @Autowired
   private MealSearchService mealSearchService;
 
+  @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping
   public ResponseEntity<?> getRecipe(
       @RequestParam(value = "query", required = false) String query,
@@ -53,6 +55,7 @@ public class MealSearchController {
     }
   }
 
+  @CrossOrigin(origins = "http://localhost:3000")
   @GetMapping("/{id}")
   public ResponseEntity<?> getRecipeDescription(
       @PathVariable(value = "id") String id,
