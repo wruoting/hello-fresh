@@ -41,12 +41,14 @@ public class MealSearchController {
       @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
     RecipeSuggestionModel recipeSuggestionModel = mealSearchService.getRecipeService(query, page, take, country);
     if(!recipeSuggestionModel.getItems().isEmpty()) {
-      return ResponseEntity.ok().body(MappedRecipeItems.builder()
+      MappedRecipeItems preProcessedMappedRecipes = MappedRecipeItems.builder()
           .recipeItems(recipeSuggestionModel
               .getItems()
               .get(0)
               .getItems())
-          .build());
+          .build();
+      MappedRecipeItems postProcessedMappedRecipes = mealSearchService.mapRecipeItems(preProcessedMappedRecipes);
+      return ResponseEntity.ok().body(postProcessedMappedRecipes);
     } else {
       List<RecipeItemIterator> listEmptyItemIterator = new ArrayList<>();
       return ResponseEntity.ok().body(MappedRecipeItems.builder()

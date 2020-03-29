@@ -2,8 +2,10 @@ package com.hellofresh.api.service;
 
 import com.hellofresh.api.config.RouteConfig;
 import com.hellofresh.api.config.TokenConfig;
+import com.hellofresh.api.model.mapped.MappedRecipeItems;
 import com.hellofresh.api.model.response.RecipeDescriptionModel.Ingredient;
 import com.hellofresh.api.model.response.RecipeDescriptionModel.RecipeDescriptionModel;
+import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeItemIterator;
 import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeSuggestionModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -90,6 +92,27 @@ public class MealSearchService {
     return responseBodyMapped;
   }
 
+  public MappedRecipeItems mapRecipeItems(MappedRecipeItems mappedRecipeItems) {
+    List<RecipeItemIterator> recipeItemIterator = new ArrayList<>();
+
+    for (RecipeItemIterator item: mappedRecipeItems.getRecipeItems()) {
+      recipeItemIterator.add(
+          RecipeItemIterator
+              .builder()
+              .title(item.getTitle())
+              .recipeId(item.getRecipeId())
+              .headline(item.getHeadline())
+              .image(appendToPath(item.getImage()))
+              .build()
+      );
+    }
+    MappedRecipeItems newMappedRecipeItems = MappedRecipeItems
+        .builder()
+        .recipeItems(recipeItemIterator)
+        .build();
+    return newMappedRecipeItems;
+  }
+
   private RecipeDescriptionModel mapRecipeDecision(RecipeDescriptionModel recipeDescriptionModel) {
     List<Ingredient> recipeIngredientMode = new ArrayList<>();
 
@@ -129,7 +152,8 @@ public class MealSearchService {
 
   private String appendToPath(String url) {
     if (!StringUtils.isEmpty(url)) {
-      return routeConfig.getHelloFreshImageEndpoint() + url;
+      return url.replaceAll(routeConfig.getHelloFreshCloudfrontEndpoint(),
+          routeConfig.getHelloFreshImageEndpoint());
     }
     return url;
   }
