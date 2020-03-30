@@ -3,7 +3,7 @@ package com.hellofresh.api.controller;
 import com.hellofresh.api.config.RouteConfig;
 import com.hellofresh.api.config.TokenConfig;
 import com.hellofresh.api.model.mapped.MappedRecipeItems;
-import com.hellofresh.api.model.response.RecipeDescriptionModel.RecipeDescriptionModel;
+import com.hellofresh.api.model.response.RecipeDescriptionModel.*;
 import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeItemIterator;
 import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeSuggestionModel;
 import com.hellofresh.api.service.MealSearchService;
@@ -12,9 +12,10 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
+import static java.util.stream.Collectors.toSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/v1/recipes")
@@ -64,5 +65,41 @@ public class MealSearchController {
       @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
     RecipeDescriptionModel recipeSuggestionModel = mealSearchService.getRecipeDescription(id, country);
     return ResponseEntity.ok().body(recipeSuggestionModel);
+  }
+
+  @CrossOrigin(origins = "http://localhost:3000")
+  @PostMapping("/ingredients")
+  public ResponseEntity<?> getRecipeIngredientsByIds(
+      @RequestBody List<String> ids,
+      @RequestParam(value = "yield", defaultValue = "2", required = false) Integer yield,
+      @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
+    List<Ingredient> ingredients = new ArrayList<>();
+    List<YieldIngredient> yieldIngredients = new ArrayList<>();
+
+    for(String id: ids) {
+      RecipeDescriptionModel recipeSuggestionModel = mealSearchService.getRecipeDescription(id, country);
+      List<Yield> allYields = recipeSuggestionModel.getYields();
+      for(Yield currentYield: allYields) {
+        if (currentYield.yields.equals(yield)) {
+          yieldIngredients.addAll(currentYield.getIngredients());
+        }
+      }
+      ingredients.addAll(recipeSuggestionModel.getIngredients());
+    }
+
+    // Combine both ingredients and their yields into one object (N^2 runtime)
+    List<MappedIngredientAmounts> mappedIngredientAmounts = new ArrayList<>();
+    for (Ingredient ingredient: ingredients) {
+      String ingredientID = ingredient.getId();
+      for (YieldIngredient yieldIngredient: yieldIngredients) {
+        String yieldIngredientID = yieldIngredient.getId();
+        if (yieldIngredientID.equals(ingredientID)) {
+          mappedIngredientAmounts.add(
+              mealSearchService.mapIngredientAmounts(ingredient, yieldIngredient));
+        }
+      }
+    }
+
+    return ResponseEntity.ok().body(mealSearchService.reduceIngredientAmounts(mappedIngredientAmounts));
   }
 }

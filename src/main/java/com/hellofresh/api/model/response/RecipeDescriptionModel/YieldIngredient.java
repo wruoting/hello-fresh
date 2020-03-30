@@ -21,9 +21,9 @@ public class YieldIngredient {
     public String id;
 
     @JsonProperty("amount")
-    public Object amount;
+    public Float amount;
 
     @JsonProperty("unit")
-    public Object unit;
+    public String unit;
 
 }

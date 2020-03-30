@@ -4,7 +4,9 @@ import com.hellofresh.api.config.RouteConfig;
 import com.hellofresh.api.config.TokenConfig;
 import com.hellofresh.api.model.mapped.MappedRecipeItems;
 import com.hellofresh.api.model.response.RecipeDescriptionModel.Ingredient;
+import com.hellofresh.api.model.response.RecipeDescriptionModel.MappedIngredientAmounts;
 import com.hellofresh.api.model.response.RecipeDescriptionModel.RecipeDescriptionModel;
+import com.hellofresh.api.model.response.RecipeDescriptionModel.YieldIngredient;
 import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeItemIterator;
 import com.hellofresh.api.model.response.RecipeSuggestionModel.RecipeSuggestionModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +115,59 @@ public class MealSearchService {
     return newMappedRecipeItems;
   }
 
+  public MappedIngredientAmounts mapIngredientAmounts(Ingredient ingredient, YieldIngredient yieldIngredient) {
+    return MappedIngredientAmounts
+        .builder()
+        .id(ingredient.getId())
+        .name(ingredient.getName())
+        .description(ingredient.getDescription())
+        .type(ingredient.getType())
+        .amount(yieldIngredient.getAmount())
+        .unit(yieldIngredient.getUnit())
+        .build();
+  }
+
+  public List<MappedIngredientAmounts> reduceIngredientAmounts(List<MappedIngredientAmounts> mappedIngredientAmounts) {
+    List<MappedIngredientAmounts> condensedListMappedIngredientAmounts = new ArrayList<>();
+    for (MappedIngredientAmounts ingredientAmounts: mappedIngredientAmounts) {
+      if (condensedListMappedIngredientAmounts.isEmpty()) {
+        condensedListMappedIngredientAmounts.add(ingredientAmounts);
+      } else {
+        // Check if ids are equal, and condense into one
+        boolean isPresent = false;
+        for(MappedIngredientAmounts condensedIngredient: condensedListMappedIngredientAmounts) {
+          if (condensedIngredient.getId().equals(ingredientAmounts.getId())) {
+            float amountCondensedIngredient = condensedIngredient.getAmount() != null ? condensedIngredient.getAmount() : 0;
+            float amountIngredientAmounts = ingredientAmounts.getAmount() != null ? ingredientAmounts.getAmount(): 0;
+            int index = condensedListMappedIngredientAmounts.indexOf(condensedIngredient);
+            condensedListMappedIngredientAmounts.set(index,
+                MappedIngredientAmounts.builder()
+                    .country(condensedIngredient.getCountry())
+                    .id(condensedIngredient.getId())
+                    .type(condensedIngredient.getType())
+                    .name(condensedIngredient.getName())
+                    .description(condensedIngredient.getDescription())
+                    .internalName(condensedIngredient.getInternalName())
+                    .shipped(condensedIngredient.getShipped())
+                    .imageLink(condensedIngredient.getImageLink())
+                    .imageLink(condensedIngredient.getImagePath())
+                    .allergens(condensedIngredient.getAllergens())
+                    .family(condensedIngredient.getFamily())
+                    .amount(Float.sum(amountCondensedIngredient, amountIngredientAmounts))
+                    .unit(condensedIngredient.getUnit())
+                    .build()
+                );
+            isPresent = true;
+          }
+        }
+        if(!isPresent) {
+          condensedListMappedIngredientAmounts.add(ingredientAmounts);
+        }
+      }
+    }
+    return condensedListMappedIngredientAmounts;
+  }
+
   private RecipeDescriptionModel mapRecipeDecision(RecipeDescriptionModel recipeDescriptionModel) {
     List<Ingredient> recipeIngredientMode = new ArrayList<>();
 
@@ -146,6 +201,7 @@ public class MealSearchService {
         .nutrition(recipeDescriptionModel.getNutrition())
         .ingredients(recipeIngredientMode)
         .imageLink(appendToPath(recipeDescriptionModel.getImagePath()))
+        .yields(recipeDescriptionModel.getYields())
         .build();
     return newRecipeDescriptionModel;
   }
