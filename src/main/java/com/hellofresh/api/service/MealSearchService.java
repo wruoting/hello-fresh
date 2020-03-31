@@ -20,6 +20,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.io.UnsupportedEncodingException;
 
 @Component
 public class MealSearchService {
@@ -45,9 +48,8 @@ public class MealSearchService {
       headers.setContentType(MediaType.APPLICATION_JSON);
       headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenConfig.getBearerToken());
       HttpEntity entity = new HttpEntity<String>(null, headers);
-
       UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(helloFreshRoute + "/api/recipes/search/suggestions")
-          .queryParam(QUERY_PARAM, query)
+          .queryParam(QUERY_PARAM, encodeValue(query))
           .queryParam(PAGE_PARAM, page)
           .queryParam(TAKE_PARAM, take)
           .queryParam(COUNTRY_PARAM, country);
@@ -214,4 +216,12 @@ public class MealSearchService {
     return url;
   }
 
+  // Method to encode a string value using `UTF-8` encoding scheme
+  private static String encodeValue(String value) {
+      try {
+          return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+      } catch (UnsupportedEncodingException ex) {
+          throw new RuntimeException(ex.getCause());
+      }
+  }
 }
