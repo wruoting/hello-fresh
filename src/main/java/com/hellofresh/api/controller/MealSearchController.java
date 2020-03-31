@@ -77,6 +77,7 @@ public class MealSearchController {
 
     // Get the ingredients and their yields for each id
     for(String id: ids) {
+      // Loops through ingredients and ingredient yields and adds them to two arrays
       List<Ingredient> ingredients = new ArrayList<>();
       List<YieldIngredient> yieldIngredients = new ArrayList<>();
       RecipeDescriptionModel recipeSuggestionModel = mealSearchService.getRecipeDescription(id, country);
@@ -88,7 +89,8 @@ public class MealSearchController {
       }
       ingredients.addAll(recipeSuggestionModel.getIngredients());
 
-      // This should get us our ingredients and our yield Ingredients. We now combine them 
+      // This should get us our ingredients and our yield Ingredients. We now combine them
+      // The two arrays from ingredients and ingredient yields are mapped to one object and pushed to mappedIngredientAmounts
       for (Ingredient ingredient: ingredients) {
         String ingredientID = ingredient.getId();
         for (YieldIngredient yieldIngredient: yieldIngredients) {
@@ -101,6 +103,7 @@ public class MealSearchController {
       }
     }
 
+    // mappedIngredientAmounts is reduced to unique elements
     return ResponseEntity.ok().body(mealSearchService.reduceIngredientAmounts(mappedIngredientAmounts));
   }
 }
