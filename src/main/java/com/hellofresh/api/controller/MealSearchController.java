@@ -73,10 +73,12 @@ public class MealSearchController {
       @RequestBody List<String> ids,
       @RequestParam(value = "yield", defaultValue = "2", required = false) Integer yield,
       @RequestParam(value = "country", defaultValue = "us", required = false) String country) {
-    List<Ingredient> ingredients = new ArrayList<>();
-    List<YieldIngredient> yieldIngredients = new ArrayList<>();
+    List<MappedIngredientAmounts> mappedIngredientAmounts = new ArrayList<>();
 
+    // Get the ingredients and their yields for each id
     for(String id: ids) {
+      List<Ingredient> ingredients = new ArrayList<>();
+      List<YieldIngredient> yieldIngredients = new ArrayList<>();
       RecipeDescriptionModel recipeSuggestionModel = mealSearchService.getRecipeDescription(id, country);
       List<Yield> allYields = recipeSuggestionModel.getYields();
       for(Yield currentYield: allYields) {
@@ -85,17 +87,16 @@ public class MealSearchController {
         }
       }
       ingredients.addAll(recipeSuggestionModel.getIngredients());
-    }
 
-    // Combine both ingredients and their yields into one object (N^2 runtime)
-    List<MappedIngredientAmounts> mappedIngredientAmounts = new ArrayList<>();
-    for (Ingredient ingredient: ingredients) {
-      String ingredientID = ingredient.getId();
-      for (YieldIngredient yieldIngredient: yieldIngredients) {
-        String yieldIngredientID = yieldIngredient.getId();
-        if (yieldIngredientID.equals(ingredientID)) {
-          mappedIngredientAmounts.add(
-              mealSearchService.mapIngredientAmounts(ingredient, yieldIngredient));
+      // This should get us our ingredients and our yield Ingredients. We now combine them 
+      for (Ingredient ingredient: ingredients) {
+        String ingredientID = ingredient.getId();
+        for (YieldIngredient yieldIngredient: yieldIngredients) {
+          String yieldIngredientID = yieldIngredient.getId();
+          if (yieldIngredientID.equals(ingredientID)) {
+            mappedIngredientAmounts.add(
+                mealSearchService.mapIngredientAmounts(ingredient, yieldIngredient));
+          }
         }
       }
     }
